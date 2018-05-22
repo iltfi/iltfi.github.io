@@ -1,0 +1,216 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width,initial-scale=1">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+        <script>
+            function drawClick() {
+                clearClick();
+                let numberOfPlayers = document.getElementById("numberOfPlayers").value;
+                
+                if (!regexNumberOfPlayers(numberOfPlayers)) {
+                    return;
+                }
+                
+                let shuffledPlayers = shufflePlayers(numberOfPlayers);
+                let emptyBracket = buildEmptyBracket(numberOfPlayers);
+                buildFinalBracket(shuffledPlayers, emptyBracket);
+                revealBracketDiv(emptyBracket.length);
+            }
+        
+            function clearClick() {
+                document.getElementById("bracketDiv").setAttribute("style", "display:none");
+                let teamsDivHeader = document.getElementById("teamsDivHeader");
+                let teamsDiv = document.getElementById("teamsDiv");
+                
+                if (teamsDivHeader.firstChild) {
+                    teamsDivHeader.removeChild(teamsDivHeader.firstChild);
+                }
+                
+                while (teamsDiv.firstChild) {
+                    teamsDiv.removeChild(teamsDiv.firstChild);
+                }
+            }
+        
+            function regexNumberOfPlayers(numberOfPlayers) {
+                if (!(/^0*([4-9]|[1-9][0-9]|[1-9][0-9][0-9]|1000)(\.0*)?$/.test(numberOfPlayers))) {
+                    let validationSpan = document.getElementById("validationSpan");
+                    
+                    if (!validationSpan.firstChild) {
+                        let span = document.createElement("span");
+                        let textNode = document.createTextNode("\u00A04 \u2264 number of players (decimal integer) \u2264 1000");
+                        span.appendChild(textNode);
+                        validationSpan.appendChild(span);
+                    }
+                    
+                    return false;
+                }
+                
+                return true;
+            }
+        
+            function revealBracketDiv(numberOfTeams) {
+                let validationSpan = document.getElementById("validationSpan");
+                let teamsDivHeader = document.getElementById("teamsDivHeader");
+                let teamsDivHeaderTextNode = document.createTextNode("\u00A0" + numberOfTeams + " team bracket");
+                
+                if (validationSpan.firstChild) {
+                    validationSpan.removeChild(validationSpan.firstChild);
+                }
+                
+                teamsDivHeader.appendChild(teamsDivHeaderTextNode);
+                document.getElementById("bracketDiv").setAttribute("style", "");
+            }
+        
+            function shufflePlayers(numberOfPlayers) {
+                let shuffledPlayers = [];
+                
+                for (let i = 0; i < numberOfPlayers; i++) {
+                    shuffledPlayers.push(i + 1);
+                }
+                
+                for (let i = numberOfPlayers - 1; i > 0; i--) {
+                    let randomIndex = Math.floor(Math.random() * (i + 1));
+                    let temp = shuffledPlayers[i];
+                    shuffledPlayers[i] = shuffledPlayers[randomIndex];
+                    shuffledPlayers[randomIndex] = temp;
+                }
+                
+                return shuffledPlayers;
+            }
+        
+            function buildEmptyBracket(numberOfPlayers) {
+                let emptyBracket = [1];
+                let power = calculatePower(numberOfPlayers);
+                let higherSeed;
+                let lowerSeed;
+                let tempBracket = emptyBracket.slice();
+                
+                for (let i = 1; i <= power; i++) {
+                    higherSeed = 1;
+                    lowerSeed = Math.pow(2, i);
+                    
+                    emptyBracket.forEach(function() {
+                        tempBracket.splice(tempBracket.indexOf(higherSeed) + 1, 0, lowerSeed);
+                        higherSeed++;
+                        lowerSeed--;
+                    });
+
+                    emptyBracket = tempBracket.slice();
+                }
+                
+                return emptyBracket;
+            }
+        
+            function buildFinalBracket(shuffledPlayers, emptyBracket) {
+                let highSeed = emptyBracket[1];
+                let teamsDiv = document.getElementById("teamsDiv");
+                let seedBuffer;
+                let playerCounter = 0;
+                
+                emptyBracket.forEach(function(currentSeed, index) {
+                    let label = document.createElement("label");
+                    label.className = "form-control";
+                    label.setAttribute("style", "overflow:hidden;font-weight:normal;margin-bottom:" + (index % 2 === 0 ? "0px" : "10px"));
+
+                    let span = document.createElement("span");
+                    span.setAttribute("style", "font-family:monospace");
+
+                    seedBuffer = buildSeedBuffer(highSeed, currentSeed);
+                    let spanTextNode = document.createTextNode(seedBuffer + currentSeed + " | ");
+
+                    let labelTextNode;
+
+                    if (currentSeed <= shuffledPlayers.length / 2) {
+                        if (playerCounter === 0 && shuffledPlayers.length % 2 === 1) {
+                            shuffledPlayers.splice(1, 0 , null);
+                            labelTextNode = document.createTextNode("player " + shuffledPlayers[playerCounter] + " (odd)");
+                        } else {
+                            labelTextNode = document.createTextNode("players " + shuffledPlayers[playerCounter] + " and " + shuffledPlayers[playerCounter + 1]);
+                        }
+                                     
+                        playerCounter += 2;
+                    } else {
+                        labelTextNode = document.createTextNode("bye");
+                    }
+
+                    span.appendChild(spanTextNode);
+                    label.appendChild(span);
+                    label.appendChild(labelTextNode);
+                    teamsDiv.appendChild(label);
+                });
+            }
+        
+            function calculatePower(n) {
+                let power = 1;
+                
+                while (n / 2 > Math.pow(2, power)) {
+                    power++;
+                }
+                
+                return power;
+            }
+        
+            function buildSeedBuffer(highSeed, currentSeed) {
+                let seedBuffer = "";
+                let seedBufferLength = highSeed.toString().length - currentSeed.toString().length;
+                
+                if (seedBufferLength) {
+                    let seedBufferArray = [];
+                    
+                    for (let i = 0; i < seedBufferLength; i++) {
+                        seedBufferArray.push("\u00A0")
+                    }
+                    
+                    seedBuffer = seedBufferArray.join("");
+                }
+                
+                return seedBuffer;
+            }
+        </script>
+    </head>
+    <body style="padding-top:70px;padding-bottom:50px">
+        <div class="navbar navbar-inverse navbar-fixed-top" style="border-width:0px">
+            <div class="container">
+                <div class="navbar-header">
+                    <a class="navbar-brand" style="color:#f0b53e">Draw Your Partner</a>
+                </div>
+            </div>
+        </div>
+        <div class="container" style="padding-left:15px;padding-right:15px">
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="form-horizontal">
+                        <div class="form-group">
+                            <label class="col-md-2 control-label">number of players:</label>
+                            <div class="col-md-10">
+                                <input id="numberOfPlayers" type="text" class="form-control" style="max-width:280px" autocomplete="off" onkeyup="if(event.keyCode == 13)drawClick()">
+                                <span id="validationSpan" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-md-offset-2 col-md-10">
+                                <input type="button" value="draw" class="btn btn-default" onclick="drawClick()">
+                                <input type="button" value="clear" class="btn btn-default" onclick="clearClick()">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="bracketDiv" style="display:none">
+                <hr>
+                <div class="row">
+                    <div class="col-md-offset-2 col-md-8">
+                        <h3 id="teamsDivHeader"></h3>
+                        <div id="teamsDiv"></div>
+                    </div>
+                </div>
+            </div>
+            <hr>
+            <footer>
+                <p>&copy; 2018 <a href="mailto:iltfi.github@gmail.com">iltfi.github</a></p>
+            </footer>
+        </div>
+    </body>
+</html>
