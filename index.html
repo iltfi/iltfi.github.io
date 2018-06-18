@@ -40,7 +40,7 @@
                     
                     if (!validationSpan.firstChild) {
                         let span = document.createElement("span");
-                        let textNode = document.createTextNode("4 \u2264 number of players (decimal integer) \u2264 1000");
+                        let textNode = document.createTextNode("\u00A0" + "4 \u2264 number of players (decimal integer) \u2264 1000");
                         span.appendChild(textNode);
                         validationSpan.appendChild(span);
                     }
