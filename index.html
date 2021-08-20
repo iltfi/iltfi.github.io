@@ -210,8 +210,12 @@
             </div>
             <hr>
             <footer>
-                <p>&copy; 2018 <a href="mailto:iltfi.github@gmail.com">iltfi.github</a></p>
+                <p>&copy; <span id="year"></span> <a href="mailto:iltfi.github@gmail.com">iltfi.github</a></p>
             </footer>
         </div>
     </body>
 </html>
+
+<script>
+    document.getElementById("year").innerHTML = new Date().getFullYear();
+</script>
