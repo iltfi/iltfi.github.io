@@ -210,12 +210,12 @@
             </div>
             <hr>
             <footer>
-                <p>&copy; <span id="year"></span> <a href="mailto:iltfi.github@gmail.com">iltfi.github</a></p>
+                <p>&copy; <span id="copyrightYear"></span> <a href="mailto:iltfi.github@gmail.com">iltfi.github</a></p>
             </footer>
         </div>
     </body>
 </html>
 
 <script>
-    document.getElementById("year").innerHTML = new Date().getFullYear();
+    document.getElementById("copyrightYear").appendChild(document.createTextNode(new Date().getFullYear()));
 </script>
